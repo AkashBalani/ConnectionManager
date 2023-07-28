@@ -1,9 +1,10 @@
 import sqlite3
 
-from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash
+from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash, session
 from werkzeug.exceptions import abort
 import logging
 from logging.config import dictConfig
+from flask_session import Session
 
 
 
@@ -46,6 +47,8 @@ connectionCount = 0
 
 
 def get_db_connection():
+    global connectionCount
+    connectionCount += 1
     connection = sqlite3.connect('database.db')
     connection.row_factory = sqlite3.Row
     return connection
@@ -70,16 +73,35 @@ def get_title(post_id):
     return title.getValue()
 
 # Define the Flask application
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your secret key'
+
+
 
 # Define the main route of the web application 
+def create_app():
+    app = Flask(__name__)
+    return app
+
+app = create_app()
+
+# def add_count():
+#     connection = get_db_connection()
+#     count = connection.execute('SELECT counter FROM count').fetchone()
+#     count = count + 1
+#     connection.execute('UPDATE count SET counter = (?)',(count))
+#     connection.close()
+
+# def get_count():
+#     connection = get_db_connection()
+#     count = connection.execute('SELECT counter FROM count').fetchone()
+#     connection.close()
+#     return count.getValue()
+
 @app.route('/')
 def index():
+    # add_count()
     app.logger.debug(GOOD_MSG_FMT, 'index')
-    global connectionCount
     connection = get_db_connection()
-    connectionCount += 1
+    
     posts = connection.execute('SELECT * FROM posts').fetchall()
     connection.close()
     return render_template('index.html', posts=posts)
@@ -101,13 +123,14 @@ def post(post_id):
 # Define the About Us page
 @app.route('/about')
 def about():
+    global connectionCount
+    connectionCount += 1
     app.logger.info(GOOD_MSG_FMT, 'About page')
     return render_template('about.html')
 
 # Define the post creation functionality 
 @app.route('/create', methods=('GET', 'POST'))
 def create():
-    global connectionCount
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
@@ -115,7 +138,6 @@ def create():
         if not title:
             flash('Title is required!')
         else:
-            connectionCount += 1
             connection = get_db_connection()
             connection.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
                          (title, content))
@@ -128,20 +150,18 @@ def create():
 
 @app.route('/healthz')
 def health():
-    global connectionCount
-    connectionCount += 1
     try:
         connection = get_db_connection()
         posts = connection.execute('SELECT * FROM posts').fetchall()
         connection.close()
     except:
         return {'result': 'ERROR - unhealthy'}
+    global connectionCount
+    connectionCount += 1
     return {'result': 'OK - healthy'}
 
 @app.route('/metrics')
 def metrics():
-    global connectionCount
-    connectionCount += 1
     connection = get_db_connection()
     posts = connection.execute('SELECT * FROM posts').fetchall()
     connection.close()
@@ -149,7 +169,6 @@ def metrics():
     return {'db_connection_count': connectionCount, 'post_count': noOfPost}
 
 
-
 # start the application on port 3111
-if __name__ == "__main__":
-   app.run(host='0.0.0.0', port='3111')
+
+app.run(host='0.0.0.0', port='3111')
