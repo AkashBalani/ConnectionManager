@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   labels:
     app: techtrends
-    tag: latest
+    tag: "{ .Values.image.tag }"
   name: techtrends
   namespace: "{ .Values.namespace.name }"
 spec:
@@ -12,32 +12,32 @@ spec:
   selector:
     matchLabels:
       app: techtrends
-      tag: latest
+      tag: "{ .Values.image.tag }"
   template:
     metadata:
       labels:
         app: techtrends
-        tag: latest
+        tag: "{ .Values.image.tag }"
     spec:
       containers:
-        - image: akashbalani/techtrends:latest
-          imagePullPolicy: IfNotPresent
+        - image: "{ .Values.image.repository }" : "{ .Values.image.tag }"
+          imagePullPolicy: "{ .Values.image.pullPolicy }"
           name: techtrends
           ports:
-          - containerPort: 3111
-            protocol: TCP
+          - containerPort: "{ .Values.containerPort }"
+            protocol: "{ .Values.service.protocol }"
           livenessProbe:
             httpGet:
-              path: /healthz
-              port: 3111
+              path: "{ .Values.livenessProbe.path }"
+              port: "{ .Values.livenessProbe.port }"
           readinessProbe:
             httpGet:
-              path: /healthz
-              port: 3111
+              path: "{ .Values.readinessProbe.path }"
+              port: "{ .Values.readinessProbe.port }"
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "250m"
+              memory: "{ .Values.resources.requests.memory }"
+              cpu: "{ .Values.resources.requests.cpu }"
             limits:
-              memory: "128Mi"
-              cpu: "500m"
+              memory: "{ .Values.resources.limits.memory }"
+              cpu: "{ .Values.resources.limits.cpu }"
