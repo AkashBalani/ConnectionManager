@@ -6,13 +6,13 @@ metadata:
     app: nginx
     tag: alpine
   name: techtrends
-  namespace: "{ .Values.namespace.name }"
+  namespace: {{ .Values.namespace.name }}
 spec:
   ports:
-    - port: "{ .Values.service.port }"
-      protocol: "{ .Values.service.protocol }"
-      targetPort: "{ .Values.service.targetPort }"
+    - port: {{ .Values.service.port }}
+      protocol: {{ .Values.service.protocol }}
+      targetPort: {{ .Values.service.targetPort }}
   selector:
     app: nginx
     tag: alpine
-  type: "{ .Values.service.type }"
+  type: {{ .Values.service.type }}
