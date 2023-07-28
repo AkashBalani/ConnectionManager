@@ -130,6 +130,12 @@ def create():
 def health():
     global connectionCount
     connectionCount += 1
+    try:
+        connection = get_db_connection()
+        posts = connection.execute('SELECT * FROM posts').fetchall()
+        connection.close()
+    except:
+        return {'result': 'ERROR - unhealthy'}
     return {'result': 'OK - healthy'}
 
 @app.route('/metrics')
