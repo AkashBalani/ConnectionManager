@@ -1,6 +1,6 @@
 FROM python:3.8
 
-COPY techtrends/ /app
+COPY /techtrends/ /app
 WORKDIR /app
 
 RUN python init_db.py
